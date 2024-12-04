@@ -34,7 +34,7 @@ func (s *studentRepoImpl) FetchAll() ([]model.Student, error) {
 }
 
 func (s *studentRepoImpl) Store(student *model.Student) error {
-	result := s.db.Create(student)
+	result := s.db.Create(&student)
 	if result.Error != nil {
 		return fmt.Errorf("failed to store student: %w", result.Error)
 	}
@@ -76,18 +76,18 @@ func (s *studentRepoImpl) FetchByID(id int) (*model.Student, error) {
 }
 
 func (s *studentRepoImpl) FetchWithClass() (*[]model.StudentClass, error) {
-    var studentClasses []model.StudentClass
-    result := s.db.Table("students").
-        Select("students.id, students.name, students.age, classes.name AS class_name").
-        Joins("JOIN classes ON students.class_id = classes.id").
-        Scan(&studentClasses)
-    if result.Error != nil {
-        return nil, fmt.Errorf("failed to fetch students with class information: %w", result.Error)
-    }
+	var studentClasses []model.StudentClass
+	result := s.db.Table("students").
+		Select("students.name, students.address, classes.name as class_name, classes.professor as professor, classes.room_number as room_number").
+		Joins("JOIN classes ON students.class_id = classes.id").
+		Scan(&studentClasses)
+	if result.Error != nil {
+		return nil, fmt.Errorf("failed to fetch students with class information: %w", result.Error)
+	}
 
-    if len(studentClasses) == 0 {
-        return &[]model.StudentClass{}, nil 
-    }
+	if len(studentClasses) == 0 {
+		return &[]model.StudentClass{}, nil
+	}
 
-    return &studentClasses, nil
+	return &studentClasses, nil
 }
