@@ -43,32 +43,27 @@ func (s *sessionsRepoImpl) DeleteSession(token string) error {
 }
 
 func (s *sessionsRepoImpl) UpdateSessions(session model.Session) error {
-    result := s.db.Model(&model.Session{}).
-        Where("token = ?", session.Token).
-        Updates(map[string]interface{}{
-            "username": session.Username,  
-        })
+	result := s.db.Model(&model.Session{}).
+		Where("username = ?", session.Username).
+		Updates(&session)
 
-    if result.Error != nil {
-        return fmt.Errorf("failed to update session: %w", result.Error)
-    }
+	if result.Error != nil {
+		return result.Error
+	}
 
-    if result.RowsAffected == 0 {
-        return fmt.Errorf("no session found with token %s", session.Token)
-    }
-    return nil
+	return nil
 }
 
 func (s *sessionsRepoImpl) SessionAvailName(name string) error {
-    var session model.Session
-    result := s.db.Where("username = ?", name).First(&session)
-    if result.Error != nil {
-        if result.Error == gorm.ErrRecordNotFound {
-            return fmt.Errorf("session not found for username %s", name)
-        }
-        return fmt.Errorf("failed to check session availability: %w", result.Error)
-    }
-    return nil
+	var session model.Session
+	result := s.db.Where("username = ?", name).First(&session)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return fmt.Errorf("session not found for username %s", name)
+		}
+		return fmt.Errorf("failed to check session availability: %w", result.Error)
+	}
+	return nil
 }
 
 func (s *sessionsRepoImpl) SessionAvailToken(token string) (model.Session, error) {
